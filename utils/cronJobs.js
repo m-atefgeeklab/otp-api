@@ -1,6 +1,5 @@
 const cron = require('node-cron');
 const Service = require('../models/serviceModel');
-const ApiError = require('../utils/apiError');
 
 // Function to delete finished services older than 60 days
 const deleteOldFinishedServices = async () => {
