@@ -1,7 +1,10 @@
-const ApiError = require("../utils/apiError");
 const asyncHandler = require("express-async-handler");
 const { catchError } = require("../middlewares/catchErrorMiddleware");
+const ApiError = require("../utils/apiError");
+const ApiResponse = require('../utils/apiResponse');
 const createToken = require("../utils/createToken");
+const User = require("../models/userModel");
+const bcrypt = require("bcryptjs");
 
 exports.signInController = catchError(
   asyncHandler(async (req, res, next) => {
@@ -10,9 +13,6 @@ exports.signInController = catchError(
     const user = await User.findOne({ email });
     if (!user) return next(new ApiError("User not found", 404));
 
-    if (!user.verifyEmail)
-      return next(new ApiError("Please verify your email", 400));
-
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect)
       return next(new ApiError("Invalid email or password", 401));
@@ -20,6 +20,6 @@ exports.signInController = catchError(
     // 2- Generate token
     const token = createToken(user);
 
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).json(new ApiResponse(200, token, "User signed in successfully"));
   })
 );

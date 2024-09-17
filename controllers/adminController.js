@@ -53,19 +53,3 @@ exports.getServicesByStatus = async (req, res, next) => {
     next(error);
   }
 };
-
-// @desc Delete all finished services
-// @route DELETE /api/services/finished
-exports.deleteFinishedServices = async (req, res, next) => {
-  try {
-    // Delete all services with status 'finished'
-    const result = await Service.deleteMany({ status: 'finished' });
-
-    res.status(200).json({
-      status: 'success',
-      message: `${result.deletedCount} finished service(s) deleted`
-    });
-  } catch (error) {
-    next(error);
-  }
-};
