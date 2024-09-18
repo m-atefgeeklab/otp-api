@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const serviceSchema = new mongoose.Schema({
   type: {
     type: String,
-    required: [true, 'Service type is required'],
   },
   phoneNumber: {
     type: String,
@@ -15,7 +14,6 @@ const serviceSchema = new mongoose.Schema({
   },
   addressLineOne: {
     type: String,
-    required: [true, 'Address is required'],
   },
   addressLineTwo: {
     type: String,
