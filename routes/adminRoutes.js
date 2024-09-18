@@ -1,7 +1,6 @@
 const express = require('express');
-const { updateServiceStatus, getServicesByStatus } = require('../controllers/adminController');
+const { updateServiceStatus, getServicesByStatus, updateService } = require('../controllers/adminController');
 const authService = require('../services/authService');
-const { followUpService} = require('../controllers/serviceController');
 const { createAndUpdateService } = require('../utils/validators/serviceValidator')
 
 const router = express.Router();
@@ -16,6 +15,6 @@ router.patch('/:id/status', updateServiceStatus);
 // Route to get all services by status
 router.get('/status/:status', getServicesByStatus);
 
-router.post('/service/:id/update', createAndUpdateService, followUpService);
+router.post('/service/:id/update', createAndUpdateService, updateService);
 
 module.exports = router;

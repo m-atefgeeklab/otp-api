@@ -53,3 +53,36 @@ exports.getServicesByStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateService = async (req, res, next) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    // Find the service by its ID
+    const service = await Service.findById(id);
+
+    if (!service) {
+      return next(new ApiError(404, 'Service not found'));
+    }
+
+    // Check if the phone number has been verified
+    if (!service.phoneVerified) {
+      return next(new ApiError(400, 'Phone number not verified. Cannot update service.'));
+    }
+
+    // Update the service with the data provided in the request body
+    Object.assign(service, updateData);
+
+    // Save the updated service data
+    await service.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Service details updated successfully',
+      data: service,
+    });
+  } catch (error) {
+    next(new ApiError(500, 'Failed to update service details'));
+  }
+};
