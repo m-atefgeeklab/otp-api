@@ -1,17 +1,24 @@
-const { CognitoIdentityProviderClient, AdminInitiateAuthCommand } = require('@aws-sdk/client-cognito-identity-provider');
-const ApiError = require('../utils/apiError');
-const { AdminRespondToAuthChallengeCommand } = require('@aws-sdk/client-cognito-identity-provider');
-const Service = require('../models/serviceModel');
-const { formatPhoneNumber } = require('../helpers/phoneNumber'); 
-const asyncHandler = require('express-async-handler');
-const cognitoClient = new CognitoIdentityProviderClient({ region: 'us-west-2' }); // Replace with your region
+const {
+  CognitoIdentityProviderClient,
+  AdminInitiateAuthCommand,
+} = require("@aws-sdk/client-cognito-identity-provider");
+const ApiError = require("../utils/apiError");
+const {
+  AdminRespondToAuthChallengeCommand,
+} = require("@aws-sdk/client-cognito-identity-provider");
+const Service = require("../models/serviceModel");
+const { formatPhoneNumber } = require("../helpers/phoneNumber");
+const asyncHandler = require("express-async-handler");
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: "us-west-2",
+}); // Replace with your region
 
 exports.sendOTPCode = async (phoneNumber, ISD) => {
   const formattedPhoneNumber = formatPhoneNumber(ISD, phoneNumber); // Format the phone number using your utility
 
   const params = {
-    AuthFlow: 'CUSTOM_AUTH', // For OTP handling
-    ClientId: process.env.COGNITO_CLIENT_ID, 
+    AuthFlow: "CUSTOM_AUTH", // For OTP handling
+    ClientId: process.env.COGNITO_CLIENT_ID,
     UserPoolId: process.env.COGNITO_USER_POOL_ID,
     AuthParameters: {
       USERNAME: formattedPhoneNumber,
@@ -21,7 +28,7 @@ exports.sendOTPCode = async (phoneNumber, ISD) => {
   try {
     const command = new AdminInitiateAuthCommand(params);
     const response = await cognitoClient.send(command);
-    
+
     if (!response || !response.AuthenticationResult) {
       throw new ApiError("Failed to send OTP", 500);
     }
@@ -31,10 +38,13 @@ exports.sendOTPCode = async (phoneNumber, ISD) => {
     const otpCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
     // Update the service model with the OTP code and expiry
-    await Service.updateOne({ phoneNumber: formattedPhoneNumber }, {
-      otpCode,
-      otpCodeExpires,
-    });
+    await Service.updateOne(
+      { phoneNumber: formattedPhoneNumber },
+      {
+        otpCode,
+        otpCodeExpires,
+      }
+    );
 
     return response;
   } catch (error) {
@@ -56,7 +66,7 @@ exports.verifyOTPCode = async (phoneNumber, ISD, enteredCode) => {
 
   // Verify OTP using AWS Cognito
   const params = {
-    ChallengeName: 'CUSTOM_CHALLENGE',
+    ChallengeName: "CUSTOM_CHALLENGE",
     ClientId: process.env.COGNITO_CLIENT_ID,
     ChallengeResponses: {
       USERNAME: formattedPhoneNumber,
@@ -71,10 +81,10 @@ exports.verifyOTPCode = async (phoneNumber, ISD, enteredCode) => {
     if (response.AuthenticationResult) {
       // Mark the phone number as verified in the database
       service.phoneVerified = true;
-      service.status = 'finished';
+      service.status = "finished";
       await service.save();
 
-      return { success: true, message: 'Phone number verified successfully' };
+      return { success: true, message: "Phone number verified successfully" };
     } else {
       throw new ApiError("OTP verification failed", 400);
     }
@@ -92,17 +102,27 @@ exports.verifyOTPCode = async (phoneNumber, ISD, enteredCode) => {
 exports.followUpServiceData = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { addressLineOne, addressLineTwo, city, country, fullName, email, userNote } = req.body;
+    const {
+      addressLineOne,
+      addressLineTwo,
+      city,
+      country,
+      fullName,
+      email,
+      userNote,
+      periodDate,
+      periodFullTime,
+    } = req.body;
 
     // Find the service by the phone number
     const service = await Service.findOne(id);
 
     if (!service) {
-      throw new ApiError('Service not found', 404);
+      throw new ApiError("Service not found", 404);
     }
 
     if (!service.phoneVerified) {
-      throw new ApiError('Phone number not verified', 400);
+      throw new ApiError("Phone number not verified", 400);
     }
 
     // Update the service with the remaining data
@@ -113,13 +133,17 @@ exports.followUpServiceData = async (req, res, next) => {
     service.fullName = fullName || service.fullName;
     service.email = email || service.email;
     service.userNote = userNote || service.userNote;
+    service.periodFullTime = periodFullTime || service.periodFullTime;
 
+    // Update the new period fields
+    service.periodDate = periodDate || service.periodDate;
+  
     // Save the updated service
     await service.save();
 
     res.status(200).json({
       success: true,
-      message: 'Service data updated successfully',
+      message: "Service data updated successfully",
       data: service,
     });
   } catch (error) {
@@ -144,9 +168,9 @@ exports.sendOTPToEmailAddress = asyncHandler(async (req, res, next) => {
 
   // Hash the OTP code before saving it
   const hashedOTPCode = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(otpCode)
-    .digest('hex');
+    .digest("hex");
 
   // Set OTP and expiration (10 minutes)
   service.otpCode = hashedOTPCode;
@@ -158,17 +182,17 @@ exports.sendOTPToEmailAddress = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail(
       email,
-      'Your OTP Code (Valid for 10 min)',
+      "Your OTP Code (Valid for 10 min)",
       verifyEmailTemplate(otpCode)
     );
-    res.status(200).json({ status: 'Success', message: 'OTP sent to email' });
+    res.status(200).json({ status: "Success", message: "OTP sent to email" });
   } catch (error) {
     // If email sending fails, clear the OTP details from the service model
     service.otpCode = undefined;
     service.otpCodeExpires = undefined;
     await service.save();
-    
-    return next(new ApiError('Error sending OTP to email', 500));
+
+    return next(new ApiError("Error sending OTP to email", 500));
   }
 });
 
@@ -180,9 +204,9 @@ exports.verifyEmailAddress = asyncHandler(async (req, res, next) => {
 
   // 1) Hash the input OTP
   const hashedOTPCode = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(otpCode)
-    .digest('hex');
+    .digest("hex");
 
   // 2) Find service by email and valid OTP
   const service = await Service.findOne({
@@ -192,7 +216,7 @@ exports.verifyEmailAddress = asyncHandler(async (req, res, next) => {
   });
 
   if (!service) {
-    return next(new ApiError('Invalid or expired OTP', 400));
+    return next(new ApiError("Invalid or expired OTP", 400));
   }
 
   // 3) Mark email as verified
@@ -202,8 +226,8 @@ exports.verifyEmailAddress = asyncHandler(async (req, res, next) => {
   await service.save();
 
   res.status(200).json({
-    status: 'Success',
-    message: 'Email successfully verified',
+    status: "Success",
+    message: "Email successfully verified",
   });
 });
 

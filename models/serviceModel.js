@@ -10,6 +10,9 @@ const serviceSchema = new mongoose.Schema({
   ISD: {
     type: String,
   },
+  email: {
+    type: String,
+  },
   addressLineOne: {
     type: String,
   },
@@ -19,10 +22,18 @@ const serviceSchema = new mongoose.Schema({
   city: {
     type: String,
   },
-  country: {
+  priority: {
+    type: String,
+    enum: ['high', 'medium', 'low'],
+    default: 'low',
+  },
+  periodDate: {
+    type: Date,
+  },
+  periodTime : {
     type: String,
   },
-  email: {
+  country: {
     type: String,
   },
   fullName: {
@@ -52,7 +63,7 @@ const serviceSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'finished'],
-    default: 'pending', // Default status
+    default: 'pending',
   },
 }, {
   timestamps: true,

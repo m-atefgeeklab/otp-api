@@ -63,6 +63,18 @@ body('city')
     .withMessage('Admin note must be a string')
     .isLength({ min: 2, max: 500 })
     .withMessage('Admin note must be between 2 and 500 characters long'),
+  
+    body('periodDate')
+    .optional() 
+    .isISO8601()
+    .withMessage('Invalid date format')
+    .isAfter(new Date().toISOString())
+    .withMessage('Date must be in the future'),
+
+    body('periodFullTime')
+    .optional() 
+    .isString()
+    .withMessage('Full time must be a string'),
 
   validatorMiddleware,  
 ];
