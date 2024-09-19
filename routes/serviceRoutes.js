@@ -21,7 +21,7 @@ router.post('/verify-otp', async (req, res, next) => {
     next(error);
   }
 });
-router.post('/follow-up/:id', createAndUpdateService, followUpServiceData);
+router.post('/service/:id/follow-up-service', createAndUpdateService, followUpServiceData);
 
 router.post('/send-otp-email', sendOTPToEmailAddress);
 

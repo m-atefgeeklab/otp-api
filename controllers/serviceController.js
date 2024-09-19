@@ -91,20 +91,18 @@ exports.verifyOTPCode = async (phoneNumber, ISD, enteredCode) => {
  */
 exports.followUpServiceData = async (req, res, next) => {
   try {
-    const { phoneNumber, ISD, addressLineOne, addressLineTwo, city, country, fullName, email, userNote } = req.body;
-
-    const formattedPhoneNumber = formatPhoneNumber(ISD, phoneNumber);
+    const { id } = req.params;
+    const { addressLineOne, addressLineTwo, city, country, fullName, email, userNote } = req.body;
 
     // Find the service by the phone number
-    const service = await Service.findOne({ phoneNumber: formattedPhoneNumber });
+    const service = await Service.findOne(id);
 
     if (!service) {
       throw new ApiError('Service not found', 404);
     }
 
-    // Check if the phone is verified before allowing further updates
-    if (!service.phoneVerified || !service.emailVerified) {
-      throw new ApiError('Phone number or email not verified', 400);
+    if (!service.phoneVerified) {
+      throw new ApiError('Phone number not verified', 400);
     }
 
     // Update the service with the remaining data
