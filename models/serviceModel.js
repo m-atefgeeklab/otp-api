@@ -22,11 +22,6 @@ const serviceSchema = new mongoose.Schema({
   city: {
     type: String,
   },
-  priority: {
-    type: String,
-    enum: ['high', 'medium', 'low'],
-    default: 'low',
-  },
   periodDate: {
     type: Date,
   },
