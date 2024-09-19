@@ -103,8 +103,8 @@ exports.followUpServiceData = async (req, res, next) => {
     }
 
     // Check if the phone is verified before allowing further updates
-    if (!service.phoneVerified) {
-      throw new ApiError('Phone number is not verified. Complete phone verification first.', 400);
+    if (!service.phoneVerified || !service.emailVerified) {
+      throw new ApiError('Phone number or email not verified', 400);
     }
 
     // Update the service with the remaining data
@@ -129,6 +129,85 @@ exports.followUpServiceData = async (req, res, next) => {
   }
 };
 
+// @desc    Send OTP to email
+// @route   POST /api/v1/services/sendOTP
+// @access  Public
+exports.sendOTPToEmailAddress = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  // 1) Get service by email
+  const service = await Service.findOne({ email });
+  if (!service) {
+    return next(new ApiError(`No service found with email: ${email}`, 404));
+  }
+
+  // 2) Generate a 6-digit OTP code
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash the OTP code before saving it
+  const hashedOTPCode = crypto
+    .createHash('sha256')
+    .update(otpCode)
+    .digest('hex');
+
+  // Set OTP and expiration (10 minutes)
+  service.otpCode = hashedOTPCode;
+  service.otpCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+
+  await service.save();
+
+  // 3) Send OTP via email
+  try {
+    await sendEmail(
+      email,
+      'Your OTP Code (Valid for 10 min)',
+      verifyEmailTemplate(otpCode)
+    );
+    res.status(200).json({ status: 'Success', message: 'OTP sent to email' });
+  } catch (error) {
+    // If email sending fails, clear the OTP details from the service model
+    service.otpCode = undefined;
+    service.otpCodeExpires = undefined;
+    await service.save();
+    
+    return next(new ApiError('Error sending OTP to email', 500));
+  }
+});
+
+// @desc    Verify OTP code
+// @route   POST /api/v1/services/verifyOTP
+// @access  Public
+exports.verifyEmailAddress = asyncHandler(async (req, res, next) => {
+  const { email, otpCode } = req.body;
+
+  // 1) Hash the input OTP
+  const hashedOTPCode = crypto
+    .createHash('sha256')
+    .update(otpCode)
+    .digest('hex');
+
+  // 2) Find service by email and valid OTP
+  const service = await Service.findOne({
+    email,
+    otpCode: hashedOTPCode,
+    otpCodeExpires: { $gt: Date.now() }, // Ensure OTP is still valid
+  });
+
+  if (!service) {
+    return next(new ApiError('Invalid or expired OTP', 400));
+  }
+
+  // 3) Mark email as verified
+  service.emailVerified = true;
+  service.otpCode = undefined; // Clear OTP once verified
+  service.otpCodeExpires = undefined; // Clear expiration
+  await service.save();
+
+  res.status(200).json({
+    status: 'Success',
+    message: 'Email successfully verified',
+  });
+});
 
 // const cognitoClient = new CognitoIdentityProviderClient({ region: 'your-region' });
 

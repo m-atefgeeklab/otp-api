@@ -6,11 +6,9 @@ const serviceSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: [true, 'Phone number is required'],
   },
   ISD: {
     type: String,
-    required: [true, 'ISD code is required'],
   },
   addressLineOne: {
     type: String,
@@ -45,6 +43,11 @@ const serviceSchema = new mongoose.Schema({
   },
   phoneVerified: {
     type: Boolean,
+    default: false,
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
   },
   status: {
     type: String,

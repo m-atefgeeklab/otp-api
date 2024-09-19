@@ -1,5 +1,5 @@
 const express = require('express');
-const { verifyOTPCode, sendOTPCode, followUpServiceData} = require('../controllers/serviceController');
+const { verifyOTPCode, sendOTPCode, followUpServiceData, sendOTPToEmailAddress, verifyEmailAddress } = require('../controllers/serviceController');
 const { createAndUpdateService } = require('../utils/validators/serviceValidator')
 
 const router = express.Router();
@@ -22,5 +22,9 @@ router.post('/verify-otp', async (req, res, next) => {
   }
 });
 router.post('/follow-up/:id', createAndUpdateService, followUpServiceData);
+
+router.post('/send-otp-email', sendOTPToEmailAddress);
+
+router.post('/verify-email', verifyEmailAddress);
 
 module.exports = router;
