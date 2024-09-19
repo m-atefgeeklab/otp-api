@@ -3,7 +3,7 @@ const ApiError = require('../utils/apiError');
 const { AdminRespondToAuthChallengeCommand } = require('@aws-sdk/client-cognito-identity-provider');
 const Service = require('../models/serviceModel');
 const { formatPhoneNumber } = require('../helpers/phoneNumber'); 
-
+const asyncHandler = require('express-async-handler');
 const cognitoClient = new CognitoIdentityProviderClient({ region: 'us-west-2' }); // Replace with your region
 
 exports.sendOTPCode = async (phoneNumber, ISD) => {
