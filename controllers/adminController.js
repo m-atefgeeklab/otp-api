@@ -67,8 +67,8 @@ exports.updateService = async (req, res, next) => {
     }
 
     // Check if the phone number has been verified
-    if (!service.phoneVerified) {
-      return next(new ApiError(400, 'Phone number not verified. Cannot update service.'));
+    if (!service.phoneVerified || !service.emailVerified) {
+      return next(new ApiError(400, 'Phone number or email not verified'));
     }
 
     // Update the service with the data provided in the request body

@@ -23,6 +23,53 @@
       }
     }
   },
+  "send-otp-email": {
+    "request": {
+      "method": "POST",
+      "header": [],
+      "body": {
+        "mode": "raw",
+        "raw": "{\r\n    \"email\": \"Jq5zK@example.com\"\r\n}",
+        "data": {
+          "email": "Jq5zK@example.com"
+        }
+      },
+      "url": {
+        "raw": "http://localhost:5000/api/v1/services/send-otp-email",
+        "protocol": "http",
+        "host": [
+          "localhost"
+        ],
+        "path": [
+          "send-otp"
+        ]
+      }
+    }
+  },
+  "verify-email": {
+    "request": {
+      "method": "POST",
+      "header": [],
+      "body": {
+        "mode": "raw",
+        "raw": "{\r\n    \"email\": \"Jq5zK@example.com\",\r\n    \"otpCode\": \"1234\"\r\n}",
+        "data": {
+          "email": "Jq5zK@example.com",
+          "otpCode": "1234"
+        }
+      },
+      "url": {
+        "raw": "http://localhost:5000/api/v1/services/verify-otp",
+        "protocol": "http",
+        "host": [
+          "localhost"
+        ],
+        "path": [
+          "verify-otp"
+        ]
+      }
+    }
+  },
   "send-otp": {
     "request": {
       "method": "POST",
@@ -86,7 +133,9 @@
           "addressLineOne": "address line 1",
           "addressLineTwo": "address line 2",
           "city": "city",
-          "country": "country"
+          "country": "country",
+          "periodDate": "2022-01-01",
+          "periodFullTime": "3AM - 9PM"
         }
       },
       "url": {

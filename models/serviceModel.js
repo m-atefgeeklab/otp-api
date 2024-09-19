@@ -30,7 +30,7 @@ const serviceSchema = new mongoose.Schema({
   periodDate: {
     type: Date,
   },
-  periodTime : {
+  periodFullTime : {
     type: String,
   },
   country: {

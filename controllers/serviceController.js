@@ -121,8 +121,9 @@ exports.followUpServiceData = async (req, res, next) => {
       throw new ApiError("Service not found", 404);
     }
 
-    if (!service.phoneVerified) {
-      throw new ApiError("Phone number not verified", 400);
+    // Check if the phone number has been verified
+    if (!service.phoneVerified || !service.emailVerified) {
+      return next(new ApiError(400, 'Phone number or email not verified'));
     }
 
     // Update the service with the remaining data
