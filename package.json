@@ -26,6 +26,7 @@
     "libphonenumber-js": "^1.11.8",
     "mongoose": "^8.6.2",
     "morgan": "^1.10.0",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.15"
   }
 }

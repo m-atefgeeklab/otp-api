@@ -6,14 +6,14 @@ exports.sendEmail = async (to, subject, htmlContent) => {
     port: process.env.EMAIL_PORT,
     secure: true,
     auth: {
-      user: process.env.USER_ACCOUNT,
+      user: process.env.USER_EMAIL,
       pass: process.env.USRE_PASSWORD,
     },
   });
 
   try {
     await transporter.sendMail({
-      from: `"OTP API" <${process.env.USER_ACCOUNT}>`,
+      from: `"OTP API" <${process.env.USER_EMAIL}>`,
       to,
       subject,
       html: htmlContent,
